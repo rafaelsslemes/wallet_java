@@ -2,7 +2,7 @@
 
 ## Design de Arquitetura ##
 
-![image info](./applications_architecture.png)
+![image info](./applications-architecture.png)
 
 Obs.: Os componentes em amarelo não foram implemetados, somente idealizados
 
