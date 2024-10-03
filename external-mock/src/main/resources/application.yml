@@ -1,0 +1,8 @@
+server:
+    port: ${PORT:8010}
+
+spring:
+    application:
+        name: external-mock
+    kafka:
+        bootstrap-servers: ${KAFKA_HOST:localhost:9092}
