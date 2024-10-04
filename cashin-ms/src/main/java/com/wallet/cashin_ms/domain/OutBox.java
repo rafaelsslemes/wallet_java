@@ -9,11 +9,11 @@ import lombok.Data;
 
 @Entity
 @Data
-public class InBox {
+public class OutBox {
     
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="INBOX_SEQ")
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="OUTBOX_SEQ")
     private long id;
 
     @Column(name = "payload", columnDefinition = "json")

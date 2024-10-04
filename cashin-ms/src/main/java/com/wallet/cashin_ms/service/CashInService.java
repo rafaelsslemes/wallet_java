@@ -7,10 +7,11 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.wallet.cashin_ms.controller.TransactionMessageProducer;
 import com.wallet.cashin_ms.domain.CashIn;
 import com.wallet.cashin_ms.domain.InBox;
-import com.wallet.cashin_ms.domain.errors.IdempotencyViolation;
-import com.wallet.cashin_ms.domain.errors.UniquenessViolation;
+import com.wallet.cashin_ms.domain.OutBox;
+import com.wallet.cashin_ms.dto.CashInDto;
 import com.wallet.cashin_ms.repository.CashInRepository;
 
 import jakarta.transaction.Transactional;
@@ -24,10 +25,16 @@ public class CashInService implements CashInServiceInterface {
     private InBoxServiceInterface inBoxService;
 
     @Autowired
+    private OutBoxServiceInterface outBoxService;
+
+    @Autowired
     private BalanceServiceInterface balanceService;
 
     @Autowired
     private CashInRepository repository;
+
+    @Autowired
+    private TransactionMessageProducer producer;
 
     @Override
     public void processPendings() {
@@ -40,9 +47,22 @@ public class CashInService implements CashInServiceInterface {
             
             try {
                 this.process(cashIn);
+                inBoxService.complete(inBox.getId());
             } catch (Exception e) {
                continue;
             }
+        }
+    }
+
+    @Override
+    public void sendProcessed() {
+
+        List<OutBox> pendings = outBoxService.listPending();
+
+        for (OutBox outBox : pendings) {
+
+            CashInDto dto = outBoxService.parsePayload(outBox.getPayload(), CashInDto.class);
+            producer.sendCashIn(dto, outBox.getId());
         }
     }
 
@@ -56,11 +76,12 @@ public class CashInService implements CashInServiceInterface {
         // Salva a operação
         repository.save(cashIn);
 
-        // Inclui no Outbox
-        
+        // Armazena a mensagem na OutBox para enviar posteriormente
+        outBoxService.save(cashIn);        
         
         // Integra com o serviço que controla o saldo
-        balanceService.sendBalanceUpdate(cashIn);
+        // Ao enviar para Balance trabalhar com concorrrência
+        // balanceService.sendBalanceUpdate(cashIn);
 
         log.info("CashIn Processed successfully: {}", cashIn.getEventId());
 

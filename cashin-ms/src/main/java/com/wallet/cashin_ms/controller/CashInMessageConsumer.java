@@ -16,7 +16,7 @@ import lombok.extern.log4j.Log4j2;
 
 @Component
 @Log4j2
-public class CashInMessageController {
+public class CashInMessageConsumer {
 
     @Autowired
     private InBoxServiceInterface inBoxService;
@@ -37,11 +37,6 @@ public class CashInMessageController {
 
         // Chama processo assíncrono para processar Entradas recebidas
         this.callProcess();
-
-         // Validar idempotencia
-        // Validar duplicidade
-        // Ao enviar para Balance trabalhar com concorrrência
-
     }
 
     private void validatePayload(CashInDto cashIn) {
@@ -65,6 +60,7 @@ public class CashInMessageController {
     private void callProcess(){
         CompletableFuture.runAsync(() -> {
             cashInService.processPendings();
+            cashInService.sendProcessed();
         });
     }
 

@@ -6,5 +6,6 @@ import com.wallet.cashin_ms.domain.CashIn;
 
 public interface CashInServiceInterface {
     public void processPendings();
+    public void sendProcessed();
     public UUID process(CashIn cashin);
 }
