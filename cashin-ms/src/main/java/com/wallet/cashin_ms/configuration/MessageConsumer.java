@@ -1,4 +1,4 @@
-package com.wallet.cashin_ms.config;
+package com.wallet.cashin_ms.configuration;
 
 import java.util.HashMap;
 
