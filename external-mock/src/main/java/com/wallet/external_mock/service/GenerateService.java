@@ -28,12 +28,12 @@ public class GenerateService {
         CashInDto dto = new CashInDto();
         dto.setDate(new Date());
         dto.setEventId(UUID.randomUUID());
+        dto.setSourceId(UUID.randomUUID());
         dto.setPayerId(UUID.randomUUID());
         dto.setReceiverId(UUID.randomUUID()); // point to user
+        dto.setDetails("TEST PAYLOAD");
         dto.setValue(100);
-        
-        log.info("PAYMENT SERVICE ::: Payment received {}", dto);
-       
+               
         log.info("Sending Payment");
          
         kafkaTemplate.send("cashin-topic", dto);
