@@ -1,13 +1,14 @@
 package com.wallet.cashin_ms.controller;
 
-import org.bouncycastle.util.Objects;
+import java.util.concurrent.CompletableFuture;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wallet.cashin_ms.dto.CashInDto;
+import com.wallet.cashin_ms.service.CashInServiceInterface;
 import com.wallet.cashin_ms.service.InBoxServiceInterface;
 
 import lombok.SneakyThrows;
@@ -18,22 +19,26 @@ import lombok.extern.log4j.Log4j2;
 public class CashInMessageController {
 
     @Autowired
-    private InBoxServiceInterface service;
+    private InBoxServiceInterface inBoxService;
+
+    @Autowired
+    private CashInServiceInterface cashInService;
 
     @SneakyThrows
     @KafkaListener(topics = "cashin-topic", groupId = "cashIn-group", containerFactory = "jsonContainerFactory")
     public void receive(@Payload CashInDto cashIn) {
 
-        log.info("CashIn received: {}", cashIn.toString());
+        log.info("CashIn received: {}", cashIn.getEventId());
         this.validatePayload(cashIn);
 
-        service.save(cashIn);
+        // Armazena a mensagem recebida na InBox para processar posteriormente
+        inBoxService.save(cashIn);
+        log.info("CashIn saved InBox: {}", cashIn.getEventId());
 
-        // Recebeu evento
-        // Validar dados
-        // Armazenar no InBox
-        // Processar InBox
-        // Validar idempotencia
+        // Chama processo assíncrono para processar Entradas recebidas
+        this.callProcess();
+
+         // Validar idempotencia
         // Validar duplicidade
         // Ao enviar para Balance trabalhar com concorrrência
 
@@ -56,5 +61,12 @@ public class CashInMessageController {
         log.info("CashIn {} validated...", cashIn.getEventId());
 
     }
+
+    private void callProcess(){
+        CompletableFuture.runAsync(() -> {
+            cashInService.processPendings();
+        });
+    }
+
 
 }
