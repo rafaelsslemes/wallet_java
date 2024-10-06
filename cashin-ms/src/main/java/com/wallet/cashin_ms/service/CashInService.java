@@ -94,6 +94,14 @@ public class CashInService implements CashInServiceInterface {
         // Armazena a mensagem na OutBox para enviar posteriormente
         outBoxService.save(cashIn);
 
+        sendUpdateBalance(cashIn);
+
+        log.info("CashIn Processed successfully: {}", cashIn.getEventId());
+
+        return cashIn.getEventId();
+    }
+
+    private void sendUpdateBalance(CashIn cashIn) {
         // Integra com o serviço que controla o saldo
         // Ao enviar para Balance trabalhar com concorrrência
         UpdateBalanceDto dto = new UpdateBalanceDto(cashIn.getReceiverId(), UpdateBalanceType.CREDIT,
@@ -106,10 +114,6 @@ public class CashInService implements CashInServiceInterface {
             log.error("ERROR ACCESSING BALANCE!");
             throw new RuntimeException();
         }
-
-        log.info("CashIn Processed successfully: {}", cashIn.getEventId());
-
-        return cashIn.getEventId();
     }
 
     // Verifica se uma transação está duplicada dentro do período estabelecido
