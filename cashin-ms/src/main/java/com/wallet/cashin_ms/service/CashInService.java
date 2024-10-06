@@ -54,9 +54,14 @@ public class CashInService implements CashInServiceInterface {
             CashIn cashIn = inBoxService.parsePayload(inBox.getPayload(), CashIn.class);
 
             try {
+                log.info("PROCESSING CASHIN: {}", cashIn.getEventId());
                 this.process(cashIn);
+                log.info("PROCESSED CASHIN: {}", cashIn.getEventId());
+
+            } catch (UniquenessViolation e) {
                 inBoxService.complete(inBox.getId());
             } catch (Exception e) {
+                log.error(e.getMessage());
                 continue;
             }
         }
@@ -75,7 +80,7 @@ public class CashInService implements CashInServiceInterface {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackOn = UniquenessViolation.class)
     public UUID process(CashIn cashIn) throws UniquenessViolation {
 
         this.validateIdempotency(cashIn);
@@ -91,9 +96,12 @@ public class CashInService implements CashInServiceInterface {
         // Ao enviar para Balance trabalhar com concorrrência
         UpdateBalanceDto dto = new UpdateBalanceDto(cashIn.getReceiverId(), UpdateBalanceType.CREDIT,
                 cashIn.getValue());
-        ResponseEntity response;
-        response = balanceService.sendBalanceUpdate(dto, dto.getReceiverId());
-        if (response.getStatusCode() != HttpStatus.OK) {
+
+        try {
+            balanceService.sendBalanceUpdate(dto, dto.getReceiverId());
+        } catch (Exception e) {
+
+            log.error("ERROR ACCESSING BALANCE!");
             throw new RuntimeException();
         }
 

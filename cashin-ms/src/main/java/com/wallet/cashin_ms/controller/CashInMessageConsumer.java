@@ -35,8 +35,6 @@ public class CashInMessageConsumer {
         inBoxService.save(cashIn);
         log.info("CashIn saved InBox: {}", cashIn.getEventId());
 
-        // Chama processo assíncrono para processar Entradas recebidas
-        this.callProcess();
     }
 
     private void validatePayload(CashInDto cashIn) {
@@ -56,13 +54,4 @@ public class CashInMessageConsumer {
         log.info("CashIn {} validated...", cashIn.getEventId());
 
     }
-
-    private void callProcess(){
-        // CompletableFuture.runAsync(() -> {
-            cashInService.processPendings();
-            cashInService.sendProcessed();
-        // });
-    }
-
-
 }
