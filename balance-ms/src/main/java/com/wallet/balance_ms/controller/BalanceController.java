@@ -4,7 +4,6 @@ package com.wallet.balance_ms.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -37,8 +36,11 @@ public class BalanceController {
 
     @PostMapping()
     public UUID createBalance(@RequestBody BalanceDto dto) {
+        log.info("BALANCE RECEIVED: {}", dto.getAccountId());
+
         Balance saved = service.save(dto);
 
+        log.info("BALANCE CREATED: {}", saved.getAccountId());
         return saved.getAccountId();
     }
 
