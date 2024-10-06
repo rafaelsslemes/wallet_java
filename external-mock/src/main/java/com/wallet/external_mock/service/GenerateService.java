@@ -23,14 +23,14 @@ public class GenerateService {
     private final KafkaTemplate<String, Serializable> kafkaTemplate;
 
     @SneakyThrows
-    public void sendCashIn() {
+    public void sendCashIn(UUID accountId) {
 
         CashInDto dto = new CashInDto();
         dto.setDate(new Date());
         dto.setEventId(UUID.randomUUID());
         dto.setSourceId(UUID.randomUUID());
         dto.setPayerId(UUID.randomUUID());
-        dto.setReceiverId(UUID.randomUUID()); // point to user
+        dto.setReceiverId(accountId); // point to user
         dto.setDetails("TEST PAYLOAD");
         dto.setValue(100);
                
