@@ -18,3 +18,12 @@ docker-compose -p wallet up -d
 app-bff: http://localhost:8000/swagger-ui/index.html  
 
 external-mock: http://localhost:8010/swagger-ui/index.html  
+
+## Decisões Arquiteturais
+
+** Uso de Inbox e Outbox Pattern: ** 
+Diante do grande volume de eventos vindo de fontes diversas, este padrão foi utilizado para garantir a atomicidade, controle transacional e idempotencia das operações.
+
+** Controle de Duplicidade: **  
+Foi considerada a janela de 5 minutos para considerar uma transação duplicada.
+
