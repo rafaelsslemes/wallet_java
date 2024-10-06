@@ -1,0 +1,15 @@
+server:
+    port: ${PORT:8005}
+
+spring:
+    application:
+        name: account-ms
+    jpa:
+        database: mysql
+        hibernate:
+            ddl-auto: update
+    datasource:
+        url: jdbc:mysql://${MYSQL_HOST:localhost:3306}/account-ms?createDatabaseIfNotExist=true
+        username: root
+        password: root
+        driver-class-name: com.mysql.cj.jdbc.Driver
