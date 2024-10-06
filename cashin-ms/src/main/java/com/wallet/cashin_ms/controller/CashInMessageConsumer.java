@@ -58,10 +58,10 @@ public class CashInMessageConsumer {
     }
 
     private void callProcess(){
-        CompletableFuture.runAsync(() -> {
+        // CompletableFuture.runAsync(() -> {
             cashInService.processPendings();
             cashInService.sendProcessed();
-        });
+        // });
     }
 
 

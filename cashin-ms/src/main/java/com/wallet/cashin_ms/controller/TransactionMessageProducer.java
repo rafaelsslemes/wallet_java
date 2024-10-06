@@ -9,7 +9,6 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
 
 import com.wallet.cashin_ms.dto.CashInDto;
-import com.wallet.cashin_ms.service.InBoxServiceInterface;
 import com.wallet.cashin_ms.service.OutBoxServiceInterface;
 
 import lombok.RequiredArgsConstructor;

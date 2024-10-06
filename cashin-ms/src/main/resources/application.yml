@@ -16,3 +16,9 @@ spring:
         username: root
         password: root
         driver-class-name: com.mysql.cj.jdbc.Driver
+
+feign:
+    client:
+        connectTimeout: 5000
+        readTimeour: 5000
+        loggerLevel: full

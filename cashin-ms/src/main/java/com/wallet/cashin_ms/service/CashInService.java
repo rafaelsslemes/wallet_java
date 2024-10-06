@@ -1,17 +1,25 @@
 package com.wallet.cashin_ms.service;
 
+import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.wallet.cashin_ms.controller.TransactionMessageProducer;
 import com.wallet.cashin_ms.domain.CashIn;
 import com.wallet.cashin_ms.domain.InBox;
 import com.wallet.cashin_ms.domain.OutBox;
+import com.wallet.cashin_ms.domain.errors.UniquenessViolation;
 import com.wallet.cashin_ms.dto.CashInDto;
+import com.wallet.cashin_ms.dto.UpdateBalanceDto;
+import com.wallet.cashin_ms.dto.UpdateBalanceType;
 import com.wallet.cashin_ms.repository.CashInRepository;
 
 import jakarta.transaction.Transactional;
@@ -44,12 +52,12 @@ public class CashInService implements CashInServiceInterface {
         for (InBox inBox : pendings) {
 
             CashIn cashIn = inBoxService.parsePayload(inBox.getPayload(), CashIn.class);
-            
+
             try {
                 this.process(cashIn);
                 inBoxService.complete(inBox.getId());
             } catch (Exception e) {
-               continue;
+                continue;
             }
         }
     }
@@ -68,7 +76,7 @@ public class CashInService implements CashInServiceInterface {
 
     @Override
     @Transactional
-    public UUID process(CashIn cashIn) {
+    public UUID process(CashIn cashIn) throws UniquenessViolation {
 
         this.validateIdempotency(cashIn);
         this.validateDuplicity(cashIn);
@@ -77,11 +85,17 @@ public class CashInService implements CashInServiceInterface {
         repository.save(cashIn);
 
         // Armazena a mensagem na OutBox para enviar posteriormente
-        outBoxService.save(cashIn);        
-        
+        outBoxService.save(cashIn);
+
         // Integra com o serviço que controla o saldo
         // Ao enviar para Balance trabalhar com concorrrência
-        // balanceService.sendBalanceUpdate(cashIn);
+        UpdateBalanceDto dto = new UpdateBalanceDto(cashIn.getReceiverId(), UpdateBalanceType.CREDIT,
+                cashIn.getValue());
+        ResponseEntity response;
+        response = balanceService.sendBalanceUpdate(dto, dto.getReceiverId());
+        if (response.getStatusCode() != HttpStatus.OK) {
+            throw new RuntimeException();
+        }
 
         log.info("CashIn Processed successfully: {}", cashIn.getEventId());
 
@@ -89,7 +103,7 @@ public class CashInService implements CashInServiceInterface {
     }
 
     // Verifica se uma transação está duplicada dentro do período estabelecido
-    private void validateDuplicity(CashIn cashIn) {
+    private void validateDuplicity(CashIn cashIn) throws UniquenessViolation {
 
         final int DUPLICITY_PERIOD = 5;
 
@@ -102,18 +116,18 @@ public class CashInService implements CashInServiceInterface {
 
             if (diff < DUPLICITY_PERIOD) {
                 log.error("CashIn {} violates Idempotency rules. Discarded.", cashIn.getEventId());
-                throw new RuntimeException();
+                throw new UniquenessViolation();
             }
         }
     }
 
-    private void validateIdempotency(CashIn cashIn) {
+    private void validateIdempotency(CashIn cashIn) throws UniquenessViolation {
 
         var existent = repository.findById(cashIn.getEventId());
         if (existent.isPresent()) {
 
             log.error("CashIn {} violates Idempotency rules. Discarded.", cashIn.getEventId());
-            throw new RuntimeException();
+            throw new UniquenessViolation();
         }
     }
 
