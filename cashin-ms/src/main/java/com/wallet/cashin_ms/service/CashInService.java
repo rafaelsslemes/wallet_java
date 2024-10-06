@@ -60,6 +60,8 @@ public class CashInService implements CashInServiceInterface {
 
             } catch (UniquenessViolation e) {
                 inBoxService.complete(inBox.getId());
+
+                // TODO: Emitir retorno negativo em um tópico para as integrações Externas
             } catch (Exception e) {
                 log.error(e.getMessage());
                 continue;
