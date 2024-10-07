@@ -2,6 +2,7 @@ package com.wallet.balance_ms.service;
 
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
@@ -65,6 +66,18 @@ public class BalanceService implements BalanceServiceInterface {
         }
 
         throw new NotFoundException();
+    }
+
+    @Override
+    public Balance getBalance(UUID accountId) throws NotFoundException {
+        Optional<Balance> optional = repository.findById(accountId);
+        if (!optional.isPresent()) {
+            throw new NotFoundException();
+        }
+
+        Balance balance = optional.get();
+        return balance;
+
     }
 
 }

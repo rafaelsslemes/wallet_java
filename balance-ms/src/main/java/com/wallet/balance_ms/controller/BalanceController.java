@@ -45,14 +45,25 @@ public class BalanceController {
     }
 
     @GetMapping("/{id}")
-    public String getBalance(@RequestParam String param) {
-        return new String();
+    public ResponseEntity<BalanceDto> getBalance(@PathVariable UUID id) {
+        try {
+            Balance balance = service.getBalance(id);
+            BalanceDto dto = new BalanceDto(balance.getAccountId(), balance.getValue());
+            
+            return new ResponseEntity<BalanceDto>(dto ,HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<BalanceDto>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<String> updateBalance (@RequestBody UpdateBalanceDto dto, @PathVariable UUID id){
+        log.info("UPDATE BALANCE RECEIVED: {}", dto.getValue());
+
         try {
             service.update(dto);   
+            log.info("BALANCE UPDATED: {}", dto.getReceiverId());
+
             return new ResponseEntity<String>(HttpStatus.ACCEPTED);
 
         }
