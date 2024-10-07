@@ -21,9 +21,6 @@ public class CashInMessageConsumer {
     @Autowired
     private InBoxServiceInterface inBoxService;
 
-    @Autowired
-    private CashInServiceInterface cashInService;
-
     @SneakyThrows
     @KafkaListener(topics = "cashin-topic", groupId = "cashIn-group", containerFactory = "jsonContainerFactory")
     public void receive(@Payload CashInDto cashIn) {
