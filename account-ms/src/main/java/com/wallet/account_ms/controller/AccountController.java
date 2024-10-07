@@ -2,6 +2,7 @@ package com.wallet.account_ms.controller;
 
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,6 +40,8 @@ public class AccountController {
             created = service.create(dto);
         } catch (BadRequestException e) {
             return new ResponseEntity<UUID>(HttpStatus.CONFLICT);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<UUID>(HttpStatus.FAILED_DEPENDENCY);
         }
 
         

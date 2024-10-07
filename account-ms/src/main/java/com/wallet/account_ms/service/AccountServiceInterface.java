@@ -12,7 +12,7 @@ import com.wallet.account_ms.dto.AccountDto;
 
 public interface AccountServiceInterface {
 
-    public Account create(AccountDto dto) throws BadRequestException;
+    public Account create(AccountDto dto) throws BadRequestException, NotFoundException;
     public double getBalance(UUID accountId) throws NotFoundException;
     public double getStatement(UUID accountId, int page) throws NotFoundException;
 }

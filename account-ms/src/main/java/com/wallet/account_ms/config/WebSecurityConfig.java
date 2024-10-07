@@ -17,7 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity
 public class WebSecurityConfig {
-    
+
     @Autowired
     private CustomBasicAuthenticationFilter customBasicAuthenticationFilter;
 
@@ -32,9 +32,10 @@ public class WebSecurityConfig {
         return http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((requests) -> requests
-                    .requestMatchers(HttpMethod.POST, "/login/**", "/account/**").permitAll()
-                    .anyRequest().authenticated()
-                )
+                        .requestMatchers("/login/**", "/account/**", "/v3/api-docs/**",
+                                "/swagger-ui/**")
+                        .permitAll()
+                        .anyRequest().authenticated())
                 .addFilterBefore(customBasicAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

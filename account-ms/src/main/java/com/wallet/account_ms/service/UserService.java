@@ -15,8 +15,9 @@ public class UserService implements UserServiceInterface {
     @Autowired
     private UserRepository repository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Override
     public User create(User user) throws BadRequestException {
@@ -26,7 +27,7 @@ public class UserService implements UserServiceInterface {
             throw new BadRequestException();
         }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder().encode(user.getPassword()));
         User created = repository.save(user);
 
         return created;

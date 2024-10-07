@@ -38,6 +38,7 @@ public class CustomBasicAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         
         if (isPublicRoutes(request)) {
+            filterChain.doFilter(request, response);
             return;
         }
                 
@@ -70,9 +71,16 @@ public class CustomBasicAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean isPublicRoutes(HttpServletRequest request) {
+        
         String uri = request.getRequestURI();
         String method = request.getMethod();
 
+        System.out.println(uri);
+       
+        if (uri.startsWith("/swagger-ui") || uri.startsWith("/v3/api-docs")) {
+            return true;
+        }
+        
         if(method.equals("POST") && (uri.equals("/login") || uri.equals("/account"))){
             return true;
         }
