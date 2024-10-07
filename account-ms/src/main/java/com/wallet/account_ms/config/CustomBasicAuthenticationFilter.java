@@ -4,18 +4,16 @@ import java.io.IOException;
 import java.util.Base64;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.wallet.account_ms.domain.User;
 import com.wallet.account_ms.repository.UserRepository;
-import com.wallet.account_ms.service.UserService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -31,13 +29,18 @@ public class CustomBasicAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         
+        if (isPublicRoutes(request)) {
+            return;
+        }
+                
         if (isBasicAuthentication(request)){
             String[] credentials = decodeBase64(getHeader(request).replace(BASIC, "")).split(":");
             String username = credentials[0];
@@ -60,9 +63,21 @@ public class CustomBasicAuthenticationFilter extends OncePerRequestFilter {
             }
 
             setAuthentication(user);
+        } else { 
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("AUTHENTICATION NOT PROVIDED");
+        }
+    }
+
+    private boolean isPublicRoutes(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        String method = request.getMethod();
+
+        if(method.equals("POST") && (uri.equals("/login") || uri.equals("/account"))){
+            return true;
         }
 
-            
+        return false;
     }
 
     private void setAuthentication(User user) {
@@ -76,7 +91,7 @@ public class CustomBasicAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean checkPassword(String loginPassword, String registeredPassword) {
-        return passwordEncoder.matches(loginPassword, registeredPassword);
+        return passwordEncoder().matches(loginPassword, registeredPassword);
     }
 
     private String decodeBase64(String base64) {
