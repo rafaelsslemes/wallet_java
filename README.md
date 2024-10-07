@@ -13,11 +13,11 @@ Acesse a raiz do repositório e execute:
 docker-compose -p wallet up -d
 ```
 
-## Swagger integrado com endpoints para consulta de saldos e extrato
-
-app-bff: http://localhost:8000/swagger-ui/index.html  
+## Swagger integrado com endpoints para geração de transações, consulta de saldos e extrato
 
 external-mock: http://localhost:8010/swagger-ui/index.html  
+
+account-ms: http://localhost:8000/swagger-ui/index.html  
 
 ## Decisões Arquiteturais
 
