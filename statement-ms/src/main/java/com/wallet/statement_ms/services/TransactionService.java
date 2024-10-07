@@ -1,8 +1,10 @@
 package com.wallet.statement_ms.services;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.wallet.statement_ms.domain.InBox;
@@ -72,6 +74,18 @@ public class TransactionService implements TransactionServiceInterface {
             log.error("TRANSACTION {} VIOLATES IDEMPOTENCY RULES. DISCARDED.", transaction.getEventId());
             throw new UniquenessViolation();
         }
+    }
+
+
+    @Override
+    public List<Transaction> listPaginated(UUID accountId, int page) throws NotFoundException {
+        Optional<List<Transaction>> optional = repository.findAllByReceiverIdAndMore(accountId, 20 * page, 20);
+        if (!optional.isPresent()) {
+            throw new NotFoundException();
+        }
+
+        List<Transaction> transactions = optional.get();
+        return transactions;
     }
 
 }
