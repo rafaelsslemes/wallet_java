@@ -10,6 +10,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import com.wallet.external_mock.infra.dto.CashInDto;
+import com.wallet.external_mock.infra.dto.CashOutDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -38,5 +39,21 @@ public class GenerateService {
          
         kafkaTemplate.send("cashin-topic", dto);
     }
+
+    @SneakyThrows
+    public void sendCashOut(UUID accountId) {
+        CashOutDto dto = new CashOutDto();
+        dto.setDate(new Date());
+        dto.setEventId(UUID.randomUUID());
+        dto.setSourceId(UUID.randomUUID());
+        dto.setPayerId(UUID.randomUUID());
+        dto.setReceiverId(accountId); // point to user
+        dto.setDetails("TEST PAYLOAD CASHOUT");
+        dto.setValue(50);
+               
+        log.info("Sending Cashout");
+         
+        kafkaTemplate.send("cashout-topic", dto);
+     }
     
 }

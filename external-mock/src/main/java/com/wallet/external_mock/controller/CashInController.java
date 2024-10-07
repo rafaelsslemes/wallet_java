@@ -12,9 +12,9 @@ import com.wallet.external_mock.service.GenerateService;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("generate")
+@RequestMapping("cashin")
 @Slf4j
-public class GenerateController {
+public class CashInController {
 
     @Autowired
     private GenerateService service;
